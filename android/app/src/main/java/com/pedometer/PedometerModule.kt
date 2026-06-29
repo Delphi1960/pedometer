@@ -53,7 +53,7 @@ class PedometerModule(reactContext: ReactApplicationContext) : ReactContextBaseJ
         
         val map = Arguments.createMap()
         map.putInt("dailySteps", daily)
-        map.putInt("totalSinceInstall", total)
+        map.putInt("totalNumberOfSteps", total)
         map.putString("installDate", installDate)
         promise.resolve(map)
     }
@@ -73,7 +73,7 @@ class PedometerModule(reactContext: ReactApplicationContext) : ReactContextBaseJ
         if (reactApplicationContext.hasActiveCatalystInstance()) {
             val map = Arguments.createMap()
             map.putInt("dailySteps", 0)
-            map.putInt("totalSinceInstall", 0)
+            map.putInt("totalNumberOfSteps", 0)
             map.putString("installDate", newInstallDate)
             reactApplicationContext
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)

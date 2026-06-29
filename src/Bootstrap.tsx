@@ -14,7 +14,7 @@ type Props = {
 
 type PedometerData = {
   dailySteps: number;
-  totalSinceInstall: number;
+  totalNumberOfSteps: number;
   installDate: string;
 };
 
@@ -24,7 +24,7 @@ type PedometerContextType = {
 };
 
 export const PedometerContext = createContext<PedometerContextType>({
-  data: { dailySteps: 0, totalSinceInstall: 0, installDate: '' },
+  data: { dailySteps: 0, totalNumberOfSteps: 0, installDate: '' },
   storage: storage,
 });
 
@@ -34,7 +34,7 @@ export default function Bootstrap({ children }: Props) {
   const { PedometerModule } = NativeModules;
   const [data, setData] = useState<PedometerData>({
     dailySteps: 0,
-    totalSinceInstall: 0,
+    totalNumberOfSteps: 0,
     installDate: '',
   });
 

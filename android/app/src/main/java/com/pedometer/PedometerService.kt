@@ -90,7 +90,7 @@ class PedometerService : Service(), SensorEventListener {
             if (reactContext != null && reactContext.hasActiveCatalystInstance()) {
                 val map = Arguments.createMap()
                 map.putInt("dailySteps", stepData.dailySteps)
-                map.putInt("totalSinceInstall", stepData.totalSinceInstall)
+                map.putInt("totalNumberOfSteps", stepData.totalNumberOfSteps)
                 map.putString("installDate", stepData.installDate)
                 
                 reactContext

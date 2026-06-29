@@ -12,26 +12,57 @@ import { useMMKVNumber, useMMKVString } from 'react-native-mmkv';
 type Props = {
   isSettingsVisible: boolean;
   onClose: () => void;
-  //   heightStr: string;
-  //   weightStr: string;
-  //   goalStr: string;
-  //   gender: string;
-  //   setHeightStr: (value: string) => void;
-  //   setWeightStr: (value: string) => void;
-  //   setGoalStr: (value: string) => void;
-  //   setGender: (value: string) => void;
-  //   saveSettings: () => void;
 };
 
-export default function Settings({
-  isSettingsVisible,
-  onClose,
-}: //   saveSettings,
-Props) {
-  const [userHeight, setUserHeight] = useMMKVNumber('user_height');
-  const [userWeight, setUserWeight] = useMMKVNumber('user_weight');
-  const [userGoal, setUserGoal] = useMMKVNumber('user_goal');
-  const [userGender, setUserGender] = useMMKVString('user_gender');
+export default function Settings({ isSettingsVisible, onClose }: Props) {
+  const [userHeight = 170, setUserHeight] = useMMKVNumber('user_height');
+  const [userWeight = 70, setUserWeight] = useMMKVNumber('user_weight');
+  const [userGoal = 10000, setUserGoal] = useMMKVNumber('user_goal');
+  const [userGender = 'male', setUserGender] = useMMKVString('user_gender');
+  const [stepLengthCm = 70, setStepLengthCm] = useMMKVNumber('step_length_cm');
+
+  const getDisplayValue = (val: number | undefined) => {
+    if (val === undefined || Number.isNaN(val) || val === 0) return '';
+    return val.toString();
+  };
+
+  const handleHeightChange = (text: string) => {
+    const cleanText = text.replace(/[^0-9]/g, '');
+    const newHeight = cleanText === '' ? 0 : parseInt(cleanText, 10);
+    setUserHeight(newHeight);
+    if (newHeight > 0) {
+      const newStepLength = Math.round(
+        userGender === 'male' ? newHeight * 0.415 : newHeight * 0.413,
+      );
+      setStepLengthCm(newStepLength);
+    }
+  };
+
+  const handleGenderChange = (newGender: string) => {
+    setUserGender(newGender);
+    if (userHeight && userHeight > 0) {
+      const newStepLength = Math.round(
+        newGender === 'male' ? userHeight * 0.415 : userHeight * 0.413,
+      );
+      setStepLengthCm(newStepLength);
+    }
+  };
+
+  const handleWeightChange = (text: string) => {
+    const cleanText = text.replace(/[^0-9]/g, '');
+    setUserWeight(cleanText === '' ? 0 : parseInt(cleanText, 10));
+  };
+
+  const handleStepLengthChange = (text: string) => {
+    const cleanText = text.replace(/[^0-9]/g, '');
+    setStepLengthCm(cleanText === '' ? 0 : parseInt(cleanText, 10));
+  };
+
+  const handleGoalChange = (text: string) => {
+    const cleanText = text.replace(/[^0-9]/g, '');
+    setUserGoal(cleanText === '' ? 0 : parseInt(cleanText, 10));
+  };
+
   return (
     <Modal
       animationType="slide"
@@ -49,8 +80,8 @@ Props) {
               <TextInput
                 style={styles.input}
                 keyboardType="numeric"
-                value={userHeight?.toString()}
-                onChangeText={text => setUserHeight(parseInt(text, 10))}
+                value={getDisplayValue(userHeight)}
+                onChangeText={handleHeightChange}
                 maxLength={3}
               />
             </View>
@@ -59,21 +90,35 @@ Props) {
               <TextInput
                 style={styles.input}
                 keyboardType="numeric"
-                value={userWeight?.toString()}
-                onChangeText={text => setUserWeight(parseInt(text, 10))}
+                value={getDisplayValue(userWeight)}
+                onChangeText={handleWeightChange}
                 maxLength={3}
               />
             </View>
           </View>
 
-          <Text style={styles.label}>Цель (шагов):</Text>
-          <TextInput
-            style={[styles.input]}
-            keyboardType="numeric"
-            value={userGoal?.toString()}
-            onChangeText={text => setUserGoal(parseInt(text, 10))}
-            maxLength={6}
-          />
+          <View style={styles.inputRow}>
+            <View style={styles.inputWrap}>
+              <Text style={styles.label}>Шаг (см):</Text>
+              <TextInput
+                style={[styles.input]}
+                keyboardType="numeric"
+                value={getDisplayValue(stepLengthCm)}
+                onChangeText={handleStepLengthChange}
+                maxLength={6}
+              />
+            </View>
+            <View style={styles.inputWrap}>
+              <Text style={styles.label}>Цель (шагов):</Text>
+              <TextInput
+                style={[styles.input]}
+                keyboardType="numeric"
+                value={getDisplayValue(userGoal)}
+                onChangeText={handleGoalChange}
+                maxLength={6}
+              />
+            </View>
+          </View>
 
           <Text style={styles.label}>Пол:</Text>
           <View style={styles.genderContainer}>
@@ -82,7 +127,7 @@ Props) {
                 styles.genderButton,
                 userGender === 'male' && styles.genderButtonActive,
               ]}
-              onPress={() => setUserGender('male')}
+              onPress={() => handleGenderChange('male')}
             >
               <Text
                 style={[
@@ -98,7 +143,7 @@ Props) {
                 styles.genderButton,
                 userGender === 'female' && styles.genderButtonActive,
               ]}
-              onPress={() => setUserGender('female')}
+              onPress={() => handleGenderChange('female')}
             >
               <Text
                 style={[

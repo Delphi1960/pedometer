@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-data class StepData(val dailySteps: Int, val totalSinceInstall: Int, val installDate: String)
+data class StepData(val dailySteps: Int, val totalNumberOfSteps: Int, val installDate: String)
 
 object StepCounterHelper {
     fun processStepEvent(currentSteps: Int): StepData {
@@ -35,9 +35,9 @@ object StepCounterHelper {
             delta = currentSteps
         }
 
-        var totalSinceInstall = mmkv.decodeInt("total_since_install", 0)
-        totalSinceInstall += delta
-        mmkv.encode("total_since_install", totalSinceInstall)
+        var totalNumberOfSteps = mmkv.decodeInt("total_since_install", 0)
+        totalNumberOfSteps += delta
+        mmkv.encode("total_since_install", totalNumberOfSteps)
 
 
         val currentDayString = dateFormat.format(Date())
@@ -57,6 +57,6 @@ object StepCounterHelper {
         // Сохраняем текущее значение датчика для следующего вычисления
         mmkv.encode("last_sensor_value", currentSteps)
 
-        return StepData(dailySteps, totalSinceInstall, installDate ?: "")
+        return StepData(dailySteps, totalNumberOfSteps, installDate ?: "")
     }
 }

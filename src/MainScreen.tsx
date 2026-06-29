@@ -11,7 +11,7 @@ import {
 import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { usePedometer } from './Bootstrap';
 import Settings from './Settings';
-import { useMMKVNumber, useMMKVString } from 'react-native-mmkv';
+import { useMMKVNumber } from 'react-native-mmkv';
 
 const { width } = Dimensions.get('window');
 
@@ -21,15 +21,12 @@ export default function MainScreen({}: Props) {
   const { data } = usePedometer();
 
   const [isSettingsVisible, setSettingsVisible] = useState(false);
-  const [currentHeight = 170] = useMMKVNumber('user_height');
   const [currentWeight = 70] = useMMKVNumber('user_weight');
   const [currentGoal = 10000] = useMMKVNumber('user_goal');
-  const [currentGender = 'male'] = useMMKVString('user_gender');
+  const [stepLengthCm = 70] = useMMKVNumber('step_length_cm');
 
-  // --- MATH ---
-  const stepLengthCm =
-    currentGender === 'male' ? currentHeight * 0.415 : currentHeight * 0.413;
   const distanceTodayKm = (data.dailySteps * stepLengthCm) / 100000;
+  const distanceAllTimeKm = (data.totalNumberOfSteps * stepLengthCm) / 100000;
   const caloriesToday = distanceTodayKm * currentWeight * 1.036;
 
   // --- SVG PROGRESS CALCULATION ---
@@ -45,7 +42,7 @@ export default function MainScreen({}: Props) {
     <View style={styles.container}>
       {/* HEADER */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>ПЕДОМЕТР</Text>
+        <Text style={styles.headerTitle}>ШАГОМЕР</Text>
         <TouchableOpacity
           style={styles.settingsIcon}
           onPress={() => setSettingsVisible(true)}
@@ -94,6 +91,7 @@ export default function MainScreen({}: Props) {
           </Text>
           <Text style={styles.progressSteps}>{data.dailySteps}</Text>
           <Text style={styles.progressLabel}>ШАГОВ</Text>
+          <Text style={styles.progressLabel}>СЕГОДНЯ</Text>
         </View>
       </View>
 
@@ -119,7 +117,13 @@ export default function MainScreen({}: Props) {
         <Text style={styles.totalLabel}>
           За все время (с {data.installDate}):
         </Text>
-        <Text style={styles.totalValue}>{data.totalSinceInstall} шагов</Text>
+        <View style={styles.totalBox}>
+          <Text style={styles.totalValue}>{data.totalNumberOfSteps} шагов</Text>
+          <View style={styles.totalDivider} />
+          <Text style={styles.totalValue}>
+            {distanceAllTimeKm.toFixed(2)} км
+          </Text>
+        </View>
       </View>
 
       {/* RESET BUTTON */}
@@ -249,7 +253,7 @@ const styles = StyleSheet.create({
   statDivider: {
     width: 1,
     height: 40,
-    backgroundColor: '#333',
+    backgroundColor: '#dad5d5ff',
     marginHorizontal: 15,
   },
   totalContainer: {
@@ -260,11 +264,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#d8d4d4ff',
   },
+  totalBox: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
   totalValue: {
     fontSize: 16,
     color: '#d8d4d4ff',
     fontWeight: 'bold',
     marginTop: 2,
+  },
+  totalDivider: {
+    width: 1,
+    height: 10,
+    backgroundColor: '#dad5d5ff',
+    marginHorizontal: 15,
   },
   resetButton: {
     paddingVertical: 10,

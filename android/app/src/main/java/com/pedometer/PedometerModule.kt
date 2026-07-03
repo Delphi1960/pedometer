@@ -25,6 +25,7 @@ class PedometerModule(reactContext: ReactApplicationContext) : ReactContextBaseJ
     // Метод для старта фоновой службы из JS
     @ReactMethod
     fun startListening() {
+        mmkv.encode("is_tracking_enabled", true)
         val intent = Intent(reactApplicationContext, PedometerService::class.java).apply {
             action = PedometerService.ACTION_START
         }
@@ -38,6 +39,7 @@ class PedometerModule(reactContext: ReactApplicationContext) : ReactContextBaseJ
     // Метод для остановки фоновой службы (опционально)
     @ReactMethod
     fun stopListening() {
+        mmkv.encode("is_tracking_enabled", false)
         val intent = Intent(reactApplicationContext, PedometerService::class.java).apply {
             action = PedometerService.ACTION_STOP
         }

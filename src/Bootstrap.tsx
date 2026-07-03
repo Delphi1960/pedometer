@@ -63,8 +63,11 @@ export default function Bootstrap({ children }: Props) {
         }
       }
 
-      // 1. Стартуем прослушивание нативного датчика
-      PedometerModule.startListening();
+      // 1. Стартуем прослушивание нативного датчика (если не выключено в настройках)
+      const isTrackingEnabled = storage.getBoolean('is_tracking_enabled') ?? true;
+      if (isTrackingEnabled) {
+        PedometerModule.startListening();
+      }
 
       // 2. Подписываемся на события
       const eventEmitter = new NativeEventEmitter(PedometerModule);
@@ -77,7 +80,7 @@ export default function Bootstrap({ children }: Props) {
 
       return () => {
         subscription.remove();
-        PedometerModule.stopListening();
+        // Службу больше не останавливаем при закрытии компонента, так как она должна работать 24/7
       };
     };
 

@@ -6,8 +6,10 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Switch,
+  NativeModules,
 } from 'react-native';
-import { useMMKVNumber, useMMKVString } from 'react-native-mmkv';
+import { useMMKVNumber, useMMKVString, useMMKVBoolean } from 'react-native-mmkv';
 
 type Props = {
   isSettingsVisible: boolean;
@@ -20,6 +22,18 @@ export default function Settings({ isSettingsVisible, onClose }: Props) {
   const [userGoal = 10000, setUserGoal] = useMMKVNumber('user_goal');
   const [userGender = 'male', setUserGender] = useMMKVString('user_gender');
   const [stepLengthCm = 70, setStepLengthCm] = useMMKVNumber('step_length_cm');
+  const [isTrackingEnabled = true, setIsTrackingEnabled] = useMMKVBoolean('is_tracking_enabled');
+
+  const { PedometerModule } = NativeModules;
+
+  const toggleTracking = (val: boolean) => {
+    setIsTrackingEnabled(val);
+    if (val) {
+      PedometerModule.startListening();
+    } else {
+      PedometerModule.stopListening();
+    }
+  };
 
   const getDisplayValue = (val: number | undefined) => {
     if (val === undefined || Number.isNaN(val) || val === 0) return '';
@@ -73,6 +87,16 @@ export default function Settings({ isSettingsVisible, onClose }: Props) {
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Настройки</Text>
+
+          <View style={styles.switchContainer}>
+            <Text style={styles.switchLabel}>Активность шагомера:</Text>
+            <Switch
+              value={isTrackingEnabled}
+              onValueChange={toggleTracking}
+              trackColor={{ false: '#3a3a3a', true: '#00d1ff' }}
+              thumbColor={isTrackingEnabled ? '#fff' : '#888'}
+            />
+          </View>
 
           <View style={styles.inputRow}>
             <View style={styles.inputWrap}>
@@ -190,6 +214,22 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 20,
     textAlign: 'center',
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    backgroundColor: '#2a2a2a',
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#3a3a3a',
+  },
+  switchLabel: {
+    fontSize: 16,
+    color: '#e2dadaff',
+    fontWeight: '600',
   },
   inputRow: {
     flexDirection: 'row',

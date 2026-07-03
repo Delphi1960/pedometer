@@ -29,6 +29,32 @@ export default function MainScreen({}: Props) {
   const distanceAllTimeKm = (data.totalNumberOfSteps * stepLengthCm) / 100000;
   const caloriesToday = distanceTodayKm * currentWeight * 1.036;
 
+  let dayCount = 0;
+  if (data.installDate) {
+    const parts = data.installDate.split('.');
+    if (parts.length === 3) {
+      const installDateObj = new Date(
+        Number(parts[2]),
+        Number(parts[1]) - 1,
+        Number(parts[0])
+      );
+      const today = new Date();
+      installDateObj.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+      const diffTime = today.getTime() - installDateObj.getTime();
+      dayCount = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+    }
+  }
+
+  const getDaysString = (days: number) => {
+    const n = Math.abs(days) % 100;
+    const n1 = n % 10;
+    if (n > 10 && n < 20) return 'дней';
+    if (n1 > 1 && n1 < 5) return 'дня';
+    if (n1 === 1) return 'день';
+    return 'дней';
+  };
+
   // --- SVG PROGRESS CALCULATION ---
   const size = width * 0.7; // 70% of screen width
   const strokeWidth = 18;
@@ -115,7 +141,7 @@ export default function MainScreen({}: Props) {
       {/* TOTAL SINCE INSTALL */}
       <View style={styles.totalContainer}>
         <Text style={styles.totalLabel}>
-          За все время (с {data.installDate}):
+          За {dayCount} {getDaysString(dayCount)} (с {data.installDate}):
         </Text>
         <View style={styles.totalBox}>
           <Text style={styles.totalValue}>{data.totalNumberOfSteps} шагов</Text>

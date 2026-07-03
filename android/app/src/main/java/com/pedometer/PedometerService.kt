@@ -50,7 +50,18 @@ class PedometerService : Service(), SensorEventListener {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when (intent?.action) {
+        val mmkv = MMKV.defaultMMKV()
+        val isEnabled = mmkv.decodeBool("is_tracking_enabled", true)
+
+        if (!isEnabled) {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            stopSelf()
+            return START_NOT_STICKY
+        }
+
+        // Если intent пустой (служба перезапущена системой), мы всё равно хотим продолжить работу
+        val action = intent?.action ?: ACTION_START
+        when (action) {
             ACTION_START -> {
                 val mmkv = MMKV.defaultMMKV()
                 val dailySteps = mmkv.decodeInt("daily_steps", 0)
@@ -73,6 +84,32 @@ class PedometerService : Service(), SensorEventListener {
     override fun onDestroy() {
         super.onDestroy()
         sensorManager.unregisterListener(this)
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        
+        val mmkv = MMKV.defaultMMKV()
+        val isEnabled = mmkv.decodeBool("is_tracking_enabled", true)
+        
+        if (isEnabled) {
+            val restartServiceIntent = Intent(applicationContext, this.javaClass).apply {
+                setPackage(packageName)
+                action = ACTION_START
+            }
+            val restartServicePendingIntent = PendingIntent.getService(
+                applicationContext,
+                1,
+                restartServiceIntent,
+                PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+            )
+            val alarmService = applicationContext.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+            alarmService.set(
+                android.app.AlarmManager.ELAPSED_REALTIME,
+                android.os.SystemClock.elapsedRealtime() + 1000, // Рестарт через 1 секунду
+                restartServicePendingIntent
+            )
+        }
     }
 
     override fun onSensorChanged(event: SensorEvent?) {

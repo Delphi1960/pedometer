@@ -1,23 +1,15 @@
 import React, { useState } from 'react';
-import {
-  Dimensions,
-  Modal,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { BarChart } from 'react-native-gifted-charts';
 import { useMMKVNumber } from 'react-native-mmkv';
 import { usePedometer } from '../Bootstrap';
-import { colorBackground, colorText } from '../const';
+import { colorBackground, colorText, modalBackground } from '../const';
 
 type Props = {};
 
 export default function WeeklyChart({}: Props) {
   const { data } = usePedometer();
   const [currentGoal = 10000] = useMMKVNumber('user_goal');
-  const { width } = Dimensions.get('window');
 
   const [isChartVisible, setChartVisible] = useState(false);
 
@@ -71,18 +63,22 @@ export default function WeeklyChart({}: Props) {
             </View>
             <BarChart
               data={chartData}
-              width={width * 0.8}
-              height={160}
+              height={200}
               barWidth={20}
               spacing={16}
-              roundedTop
-              roundedBottom
+              // roundedTop
+              // roundedBottom
               hideRules
-              xAxisThickness={0}
-              yAxisThickness={0}
+              xAxisThickness={1}
+              yAxisThickness={1}
+              xAxisColor={colorText}
+              yAxisColor={colorText}
               yAxisTextStyle={styles.yAxisTextStyle}
-              noOfSections={3}
+              noOfSections={4}
               maxValue={maxValue}
+              formatYLabel={(label: string) =>
+                String(Math.round(Number(label)))
+              }
               labelWidth={30}
               xAxisLabelTextStyle={styles.xAxisLabelTextStyle}
             />
@@ -115,7 +111,9 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: '90%',
-    backgroundColor: colorBackground,
+    backgroundColor: modalBackground,
+    borderColor: colorText,
+    borderWidth: 1,
     borderRadius: 20,
     paddingVertical: 20,
     alignItems: 'center',
@@ -134,9 +132,9 @@ const styles = StyleSheet.create({
   },
   closeModalText: {
     color: colorText,
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '600',
-    letterSpacing: 1,
+    marginLeft: 10,
   },
   xAxisLabelTextStyle: {
     color: colorText,

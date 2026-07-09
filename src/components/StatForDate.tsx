@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { usePedometer } from '../Bootstrap';
 import { useMMKVNumber } from 'react-native-mmkv';
-import { colorBackground, colorText } from '../const';
+import { colorText } from '../const';
 
 type Props = {};
 

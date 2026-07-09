@@ -15,7 +15,7 @@ import {
   useMMKVString,
   useMMKVBoolean,
 } from 'react-native-mmkv';
-import { colorBackground, colorText } from '../const';
+import { colorBackground, colorText, modalBackground } from '../const';
 
 type Props = {};
 
@@ -225,7 +225,9 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: '90%',
-    backgroundColor: '#1e1e1e',
+    backgroundColor: modalBackground,
+    borderColor: colorText,
+    borderWidth: 1,
     borderRadius: 24,
     padding: 24,
     shadowColor: '#000',

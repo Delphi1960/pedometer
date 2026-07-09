@@ -16,6 +16,7 @@ type PedometerData = {
   dailySteps: number;
   totalNumberOfSteps: number;
   installDate: string;
+  history: number[];
 };
 
 type PedometerContextType = {
@@ -24,7 +25,7 @@ type PedometerContextType = {
 };
 
 export const PedometerContext = createContext<PedometerContextType>({
-  data: { dailySteps: 0, totalNumberOfSteps: 0, installDate: '' },
+  data: { dailySteps: 0, totalNumberOfSteps: 0, installDate: '', history: [0, 0, 0, 0, 0, 0, 0] },
   storage: storage,
 });
 
@@ -36,6 +37,7 @@ export default function Bootstrap({ children }: Props) {
     dailySteps: 0,
     totalNumberOfSteps: 0,
     installDate: '',
+    history: [0, 0, 0, 0, 0, 0, 0],
   });
 
   useEffect(() => {

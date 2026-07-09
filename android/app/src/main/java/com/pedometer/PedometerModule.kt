@@ -49,14 +49,19 @@ class PedometerModule(reactContext: ReactApplicationContext) : ReactContextBaseJ
     // Экстренный метод получения текущего значения датчика «прямо сейчас» (берет из MMKV)
     @ReactMethod
     fun getCurrentSensorValue(promise: Promise) {
-        val daily = mmkv.decodeInt("daily_steps", 0)
-        val total = mmkv.decodeInt("total_since_install", 0)
-        val installDate = mmkv.decodeString("install_date", "")
+        val stepData = StepCounterHelper.getCurrentData()
         
         val map = Arguments.createMap()
-        map.putInt("dailySteps", daily)
-        map.putInt("totalNumberOfSteps", total)
-        map.putString("installDate", installDate)
+        map.putInt("dailySteps", stepData.dailySteps)
+        map.putInt("totalNumberOfSteps", stepData.totalNumberOfSteps)
+        map.putString("installDate", stepData.installDate)
+        
+        val historyArray = Arguments.createArray()
+        for (steps in stepData.history) {
+            historyArray.pushInt(steps)
+        }
+        map.putArray("history", historyArray)
+        
         promise.resolve(map)
     }
 
@@ -71,12 +76,30 @@ class PedometerModule(reactContext: ReactApplicationContext) : ReactContextBaseJ
         mmkv.encode("total_since_install", 0)
         mmkv.encode("install_date", newInstallDate)
         
+        // Сбрасываем историю за неделю
+        val dateFormatHistory = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val calendar = java.util.Calendar.getInstance()
+        for (i in 6 downTo 1) {
+            calendar.time = Date()
+            calendar.add(java.util.Calendar.DAY_OF_YEAR, -i)
+            val dateStr = dateFormatHistory.format(calendar.time)
+            mmkv.encode("history_$dateStr", 0)
+        }
+        
         // Отправляем событие в UI для мгновенного обновления экрана
         if (reactApplicationContext.hasActiveCatalystInstance()) {
+            val stepData = StepCounterHelper.getCurrentData()
             val map = Arguments.createMap()
-            map.putInt("dailySteps", 0)
-            map.putInt("totalNumberOfSteps", 0)
-            map.putString("installDate", newInstallDate)
+            map.putInt("dailySteps", stepData.dailySteps)
+            map.putInt("totalNumberOfSteps", stepData.totalNumberOfSteps)
+            map.putString("installDate", stepData.installDate)
+            
+            val historyArray = Arguments.createArray()
+            for (steps in stepData.history) {
+                historyArray.pushInt(steps)
+            }
+            map.putArray("history", historyArray)
+            
             reactApplicationContext
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
                 .emit("onStepCountChanged", map)
@@ -99,4 +122,41 @@ class PedometerModule(reactContext: ReactApplicationContext) : ReactContextBaseJ
 
     @ReactMethod
     fun removeListeners(count: Double) {}
+
+    @ReactMethod
+    fun injectMockData(promise: Promise) {
+        val today = java.util.Date()
+        val calendar = java.util.Calendar.getInstance()
+        val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+        val mockSteps = intArrayOf(5430, 11200, 8750, 3200, 14500, 9100)
+        
+        for (i in 1..6) {
+            calendar.time = today
+            calendar.add(java.util.Calendar.DAY_OF_YEAR, -i)
+            val dateStr = dateFormat.format(calendar.time)
+            val mmkv = com.tencent.mmkv.MMKV.defaultMMKV()
+            mmkv.encode("history_$dateStr", mockSteps[6 - i])
+        }
+        
+        // Сразу отправляем обновленные данные в UI
+        if (reactApplicationContext.hasActiveCatalystInstance()) {
+            val stepData = StepCounterHelper.getCurrentData()
+            val map = Arguments.createMap()
+            map.putInt("dailySteps", stepData.dailySteps)
+            map.putInt("totalNumberOfSteps", stepData.totalNumberOfSteps)
+            map.putString("installDate", stepData.installDate)
+            
+            val historyArray = Arguments.createArray()
+            for (steps in stepData.history) {
+                historyArray.pushInt(steps)
+            }
+            map.putArray("history", historyArray)
+            
+            reactApplicationContext
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                .emit("onStepCountChanged", map)
+        }
+        
+        promise.resolve(true)
+    }
 }

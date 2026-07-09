@@ -130,6 +130,12 @@ class PedometerService : Service(), SensorEventListener {
                 map.putInt("totalNumberOfSteps", stepData.totalNumberOfSteps)
                 map.putString("installDate", stepData.installDate)
                 
+                val historyArray = Arguments.createArray()
+                for (steps in stepData.history) {
+                    historyArray.pushInt(steps)
+                }
+                map.putArray("history", historyArray)
+                
                 reactContext
                     .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
                     .emit("onStepCountChanged", map)

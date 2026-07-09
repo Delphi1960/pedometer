@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-data class StepData(val dailySteps: Int, val totalNumberOfSteps: Int, val installDate: String)
+data class StepData(val dailySteps: Int, val totalNumberOfSteps: Int, val installDate: String, val history: IntArray)
 
 object StepCounterHelper {
     fun processStepEvent(currentSteps: Int): StepData {
@@ -45,6 +45,11 @@ object StepCounterHelper {
 
         var dailySteps = mmkv.decodeInt("daily_steps", 0)
         if (savedDayString != currentDayString) {
+            // Сохраняем вчерашние шаги в историю для графика
+            if (!savedDayString.isNullOrEmpty()) {
+                mmkv.encode("history_$savedDayString", dailySteps)
+            }
+            
             // Новый день
             dailySteps = delta
             mmkv.encode("current_day", currentDayString)
@@ -57,6 +62,37 @@ object StepCounterHelper {
         // Сохраняем текущее значение датчика для следующего вычисления
         mmkv.encode("last_sensor_value", currentSteps)
 
-        return StepData(dailySteps, totalNumberOfSteps, installDate ?: "")
+        val historyArray = IntArray(7)
+        val dateFormatHistory = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val calendar = java.util.Calendar.getInstance()
+        for (i in 6 downTo 1) {
+            calendar.time = Date()
+            calendar.add(java.util.Calendar.DAY_OF_YEAR, -i)
+            val dateStr = dateFormatHistory.format(calendar.time)
+            historyArray[6 - i] = mmkv.decodeInt("history_$dateStr", 0)
+        }
+        historyArray[6] = dailySteps
+
+        return StepData(dailySteps, totalNumberOfSteps, installDate ?: "", historyArray)
+    }
+
+    fun getCurrentData(): StepData {
+        val mmkv = MMKV.defaultMMKV()
+        val dailySteps = mmkv.decodeInt("daily_steps", 0)
+        val totalNumberOfSteps = mmkv.decodeInt("total_since_install", 0)
+        val installDate = mmkv.decodeString("install_date", "")
+
+        val historyArray = IntArray(7)
+        val dateFormatHistory = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val calendar = java.util.Calendar.getInstance()
+        for (i in 6 downTo 1) {
+            calendar.time = Date()
+            calendar.add(java.util.Calendar.DAY_OF_YEAR, -i)
+            val dateStr = dateFormatHistory.format(calendar.time)
+            historyArray[6 - i] = mmkv.decodeInt("history_$dateStr", 0)
+        }
+        historyArray[6] = dailySteps
+
+        return StepData(dailySteps, totalNumberOfSteps, installDate ?: "", historyArray)
     }
 }

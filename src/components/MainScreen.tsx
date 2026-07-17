@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet, ScrollView } from 'react-native';
 import Settings from './Settings';
 import WeeklyChart from './WeeklyChart';
 import CircularProgress from './CircularProgress';
@@ -11,7 +11,11 @@ type Props = {};
 
 export default function MainScreen({}: Props) {
   return (
-    <View style={styles.container}>
+    <ScrollView 
+      style={{ backgroundColor: '#121212' }}
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
       {/* HEADER */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>ШАГОМЕР</Text>
@@ -30,13 +34,13 @@ export default function MainScreen({}: Props) {
 
       {/* ВСЕГО С ДАТЫ СБРОСА */}
       <StatForDate />
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'space-between',
     backgroundColor: '#121212',
     alignItems: 'center',
